@@ -30,15 +30,29 @@ fn main() {
     if a_filename == "" || b_filename == "" {
         return;
     }
-    let a_file = File::create(a_filename).unwrap();
-    let b_file = File::create(b_filename).unwrap();
+
+    let a_file;
+    match File::create(a_filename) {
+        Ok(file) => a_file = file,
+        Err(_) => return
+    }
+
+    let b_file;
+    match File::create(b_filename) {
+        Ok(file) => b_file = file,
+        Err(_) => return
+    }
 
     let mut a_writer = BufWriter::new(&a_file);
     let mut b_writer = BufWriter::new(&b_file);
 
     let stdin = io::stdin();
     for ln in stdin.lock().lines() {
-        let line = ln.unwrap();
+        let line;
+        match ln {
+            Ok(data) => line = data,
+            Err(_) => continue
+        }
         let r = line.find(&separator);
         if let Some(idx) = &r {
             let _idx = *idx as usize;
