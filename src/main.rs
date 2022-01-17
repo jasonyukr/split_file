@@ -32,15 +32,17 @@ fn main() {
     }
 
     let a_file;
-    match File::create(a_filename) {
-        Ok(file) => a_file = file,
-        Err(_) => return
+    if let Ok(file) = File::create(a_filename) {
+        a_file = file;
+    } else {
+        return;
     }
 
     let b_file;
-    match File::create(b_filename) {
-        Ok(file) => b_file = file,
-        Err(_) => return
+    if let Ok(file) = File::create(b_filename) {
+        b_file = file;
+    } else {
+        return;
     }
 
     let mut a_writer = BufWriter::new(&a_file);
@@ -48,21 +50,17 @@ fn main() {
 
     let stdin = io::stdin();
     for ln in stdin.lock().lines() {
-        let line;
-        match ln {
-            Ok(data) => line = data,
-            Err(_) => continue
-        }
-        let r = line.find(&separator);
-        if let Some(idx) = &r {
-            let _idx = *idx as usize;
-            a_writer.write(&line[.._idx].as_bytes()).unwrap();
-            a_writer.write("\n".as_bytes()).unwrap();
-            b_writer.write(&line[_idx+separator.len()..].as_bytes()).unwrap();
-            b_writer.write("\n".as_bytes()).unwrap();
-        } else {
-            b_writer.write(line.as_bytes()).unwrap();
-            b_writer.write("\n".as_bytes()).unwrap();
+        if let Ok(line) = ln {
+            if let Some(i) = line.find(&separator) {
+                let idx = i as usize;
+                let _ = a_writer.write(&line[..idx].as_bytes());
+                let _ = a_writer.write("\n".as_bytes());
+                let _ = b_writer.write(&line[idx+separator.len()..].as_bytes());
+                let _ = b_writer.write("\n".as_bytes());
+            } else {
+                let _ = b_writer.write(line.as_bytes());
+                let _ = b_writer.write("\n".as_bytes());
+            }
         }
     }
 }
